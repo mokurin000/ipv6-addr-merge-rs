@@ -8,6 +8,13 @@ use ipv6_addr_merge::get_ipv6_pd_from_ubus;
 struct Cli {
     #[argh(
         option,
+        description = "network interface to get PD prefix",
+        default = "String::from(\"wan_6\")"
+    )]
+    interface: String,
+
+    #[argh(
+        option,
         description = "specify a prefix, rather than getting from IPv6-PD"
     )]
     prefix: Option<String>,
@@ -16,11 +23,16 @@ struct Cli {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let Cli { prefix, suffix } = argh::from_env();
+    let Cli {
+        prefix,
+        suffix,
+        interface,
+    } = argh::from_env();
+
     let prefix_ip = if let Some(prefix) = prefix {
         Ipv6Addr::from_str(&prefix)?
     } else {
-        get_ipv6_pd_from_ubus()?
+        get_ipv6_pd_from_ubus(&interface)?
     };
 
     let suffix_ip = Ipv6Addr::from_str(&suffix)?;
